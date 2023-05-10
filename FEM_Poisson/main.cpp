@@ -12,16 +12,18 @@ int main() {
 
 	double domainHeight = 10e-6;
 	double domainLength = 10e-6;
-	double uniformSpacing = 0.5e-6;
+	double uniformSpacing = 0.3e-6;
 
 	boundingbox domain(domainHeight, domainLength);
 	std::vector<double> circleCenter(2, 0);
-	circleCenter[0] = 0;
-	circleCenter[1] = 0;
 	circle* circle1 = new circle(circleCenter, 5e-6);
 	domain.addShape(circle1, true);
-	circle* circle2 = new circle(circleCenter, 2.5e-6);
-	domain.addShape(circle2, false);
+	//circle* circle2 = new circle(circleCenter, 2.5e-6);
+	//domain.addShape(circle2, false);
+
+	std::vector<double> squareCenter(2, 0);
+	rectangle* square1 = new rectangle(squareCenter, 5e-6, 4e-6);
+	domain.addShape(square1, false);
 
 
 	std::vector < std::array<double, 2>> gridPoints = domain.generateUniformGrid2DRand(uniformSpacing, 0.8);
