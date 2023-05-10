@@ -37,7 +37,7 @@ BWtriangle::BWtriangle(BWvertex v1, BWvertex v2, BWvertex v3) : mV1(v1), mV2(v2)
 	double a = distance(v1, v2);
 	double b = distance(v1, v3);
 	double c = distance(v2, v3);
-	double R = (a * b * c) / (sqrt(a + b + c) * (-a + b + c) * (a - b + c) * (a + b - c));
+	double R = (a * b * c) / (sqrt((a + b + c) * (-a + b + c) * (a - b + c) * (a + b - c)));
 
 	//Find center of circle
 	std::array<double, 2> v1Coord = v1.getCoord();
@@ -55,7 +55,7 @@ BWtriangle::BWtriangle(BWvertex v1, BWvertex v2, BWvertex v3) : mV1(v1), mV2(v2)
 	double& y3 = v3Coord[1];
 
 	double centerDenom = 2 * (x1 - x2) * (y1 - y3) - 2 * (x1 - x3) * (y1 - y2);
-	double centerX = ((x1 * x1 + y1 * y1 - y2 * y2) * (y1 - y3) - (x1 * x1 + y1 * y1 - x3 * x3 - y3 * y3) * (y1 - y2)) / centerDenom;
+	double centerX = ((x1 * x1 + y1 * y1 - x2 * x2 - y2 * y2) * (y1 - y3) - (x1 * x1 + y1 * y1 - x3 * x3 - y3 * y3) * (y1 - y2)) / centerDenom;
 	double centerY = ((x1 - x2) * (x1 * x1 + y1 * y1 - x3 * x3 - y3 * y3) - (x1 - x3) * (x1 * x1 + y1 * y1 - x2 * x2 - y2 * y2)) / centerDenom;
 
 	std::vector<double> center = { centerX, centerY };
@@ -89,19 +89,21 @@ BWmesh::BWmesh() {//empty ctor for mesh for now
 std::vector<BWtriangle> addVertexAndCheck(std::array<double, 2> point, std::vector<BWtriangle> triangleArray) {
 	//intialize edge aray for later
 	std::vector<BWedge> edges;
-	std::vector<BWtriangle>outputTriangles;
-
+	std::vector<BWtriangle> tOutputTriangles;
+	BWvertex ptVertex = BWvertex(point[0], point[1]);
 	//check all triangles with this vertex, is this vertex in any triangles, if so, remove that triangle
 	for (BWtriangle triangle : triangleArray) {
-		if (triangle.inCircumCirc(BWvertex(point[0], point[1]))) {
+		
+		if (triangle.inCircumCirc(ptVertex)) {
 			std::array<BWvertex, 3> tEdge = triangle.getVertex();
 			//push back all the edges
 			edges.push_back(BWedge(tEdge[0], tEdge[1]));
 			edges.push_back(BWedge(tEdge[0], tEdge[2]));
 			edges.push_back(BWedge(tEdge[1], tEdge[2]));
-			break;
 		}
-		outputTriangles.push_back(triangle); //if point is not in any of the triangles in array, triangle is valid
+		else {
+			tOutputTriangles.push_back(triangle);
+		}//if point is not in any of the triangles in array, triangle is valid
 	}
 
 	
@@ -111,13 +113,13 @@ std::vector<BWtriangle> addVertexAndCheck(std::array<double, 2> point, std::vect
 	edges = findUniqueEdges(edges); //Overwrite edges with unique edges
 
 	//Create new triangles from unique edge list using the vertex
-	for (const BWedge& oneEdge : edges) {
+	for (BWedge oneEdge : edges) {
 
 		std::array<BWvertex, 2> edgeVertecies= oneEdge.getVertex();
-
-		outputTriangles.push_back(BWtriangle(edgeVertecies[0], edgeVertecies[1], BWvertex(point[0], point[1])));
+		BWtriangle tempTriangle = BWtriangle(edgeVertecies[0], edgeVertecies[1], ptVertex);
+		tOutputTriangles.push_back(tempTriangle);
 	}
-	return outputTriangles;
+	return tOutputTriangles;
 }
 
 std::vector<BWedge> findUniqueEdges(std::vector <BWedge> inputVector) {
@@ -126,11 +128,13 @@ std::vector<BWedge> findUniqueEdges(std::vector <BWedge> inputVector) {
 	std::vector<BWedge> uniqueEdges;
 
 	for (int i = 0; i < inputVector.size(); ++i) {
-		uniqueEdgeMap[inputVector[i]] = i;
+		uniqueEdgeMap[inputVector[i]]++;
 	}
 
 	for (const auto& kv : uniqueEdgeMap) {
-		uniqueEdges.push_back(kv.first);
+		if (kv.second == 1) {
+			uniqueEdges.push_back(kv.first);
+		}
 	}
 
 	return uniqueEdges;

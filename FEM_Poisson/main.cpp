@@ -12,7 +12,7 @@ int main() {
 
 	double domainHeight = 10e-6;
 	double domainLength = 10e-6;
-	double uniformSpacing = 1e-7;
+	double uniformSpacing = 0.5e-6;
 
 	boundingbox domain(domainHeight, domainLength);
 	std::vector<double> circleCenter(2, 0);
@@ -24,7 +24,7 @@ int main() {
 	domain.addShape(circle2, false);
 
 
-	std::vector < std::array<double, 2>> gridPoints = domain.generateUniformGrid2DRand(uniformSpacing, 0.5);
+	std::vector < std::array<double, 2>> gridPoints = domain.generateUniformGrid2DRand(uniformSpacing, 0.8);
 
 	std::map<double,std::map<double, int>> gridLookUp;
 
