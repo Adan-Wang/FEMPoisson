@@ -26,6 +26,10 @@ std::array<BWvertex, 2> BWedge::getVertex() const {
 	return std::array<BWvertex, 2>{mV1, mV2};
 }
 
+BWtriangle::BWtriangle() : mV1(BWvertex(1,0)),mV2(BWvertex(-1,0)),mV3(BWvertex(0,1)) { //empty ctor with arbitrary triangle
+
+}
+
 BWtriangle::BWtriangle(BWvertex v1, BWvertex v2, BWvertex v3) : mV1(v1), mV2(v2),mV3(v3) {
 	auto distance = [](BWvertex v1, BWvertex v2) -> double { //euclidean distance subroutine, look up lambda functions if confused
 		std::array<double, 2> v1Coord = v1.getCoord();
@@ -86,40 +90,58 @@ BWmesh::BWmesh() {//empty ctor for mesh for now
 }
 
 //Aux function to generate mesh, can probably implement with lambda but it might be a bad idea because then we might need to embed lambdas in lambdas (not sure about function scoping..)
-std::vector<BWtriangle> addVertexAndCheck(std::array<double, 2> point, std::vector<BWtriangle> triangleArray) {
-	//intialize edge aray for later
-	std::vector<BWedge> edges;
-	std::vector<BWtriangle> tOutputTriangles;
+void addVertexAndCheck(std::array<double, 2> point, std::vector<BWtriangle>& triangleArray) {
+	
+	//std::vector<BWedge> edges;
+	//std::vector<BWtriangle> tOutputTriangles;
+	std::map<int, int> badTriangles; //Table of bad triangles, the key is the index, value is not actually used, so will just be count
+	//build vertex out of the points
 	BWvertex ptVertex = BWvertex(point[0], point[1]);
-	//check all triangles with this vertex, is this vertex in any triangles, if so, remove that triangle
-	for (BWtriangle triangle : triangleArray) {
-		
-		if (triangle.inCircumCirc(ptVertex)) {
-			std::array<BWvertex, 3> tEdge = triangle.getVertex();
-			//push back all the edges
-			edges.push_back(BWedge(tEdge[0], tEdge[1]));
-			edges.push_back(BWedge(tEdge[0], tEdge[2]));
-			edges.push_back(BWedge(tEdge[1], tEdge[2]));
+
+	//loop through triangle array, identify bad triangles
+
+	for (int ii = 0; ii < triangleArray.size();++ii) {
+		if (triangleArray[ii].inCircumCirc(ptVertex)) { //If triangle is bad
+			badTriangles[ii]++;
 		}
-		else {
-			tOutputTriangles.push_back(triangle);
-		}//if point is not in any of the triangles in array, triangle is valid
 	}
+
+	//decompose all bad triangles into their edges and add to edge array
+	//intialize edge aray for later, number of edges is number of bad triangles *3 since each triangle has 3 edges
+	//Put empty edges in each container
+	std::vector<BWedge> edges(badTriangles.size()*3, BWedge(BWvertex(0, 0), BWvertex(0, 0)));
+	int jj = 0;
+	for (const auto& kv : badTriangles) {
+		std::array<BWvertex, 3> tEdge = triangleArray[kv.first].getVertex();
+		edges[jj] = BWedge(tEdge[0], tEdge[1]);
+		jj++;
+		edges[jj] = BWedge(tEdge[0], tEdge[2]);
+		jj++;
+		edges[jj] = BWedge(tEdge[1], tEdge[2]);
+		jj++;
+	}
+
+	//delete all bad triangles from original array, using erase_if rather than calling erase, again, using lambda function for the predicate
+	std::erase_if(triangleArray, [ptVertex](BWtriangle triangle) { return triangle.inCircumCirc(ptVertex); });
 
 	
 	//Find the set of unique edges from the edge collection, this is n^2 in edge collection in the worst case,
 	//TO-DO: look into this and fix it up
-	// I implemented somethnig hacky (without knowing how the std::hashing function actually works or why we need to bitshift...etc) for now
+	// I implemented something hacky (without knowing how the std::hashing function actually works or why we need to bitshift...etc) for now
 	edges = findUniqueEdges(edges); //Overwrite edges with unique edges
 
-	//Create new triangles from unique edge list using the vertex
-	for (BWedge oneEdge : edges) {
 
-		std::array<BWvertex, 2> edgeVertecies= oneEdge.getVertex();
-		BWtriangle tempTriangle = BWtriangle(edgeVertecies[0], edgeVertecies[1], ptVertex);
-		tOutputTriangles.push_back(tempTriangle);
+	std::vector<BWtriangle> newTriangles(edges.size(), BWtriangle());
+
+
+	//Create new triangles from unique edge list using the vertex
+	for (int ii = 0; ii < edges.size();++ii) {
+		std::array<BWvertex, 2> edgeVertecies= edges[ii].getVertex();
+		newTriangles[ii] = BWtriangle(edgeVertecies[0], edgeVertecies[1], ptVertex);
 	}
-	return tOutputTriangles;
+	//append original triangle array with new triangles
+	triangleArray.reserve(triangleArray.size() + newTriangles.size());
+	triangleArray.insert(triangleArray.end(), newTriangles.begin(), newTriangles.end());
 }
 
 std::vector<BWedge> findUniqueEdges(std::vector <BWedge> inputVector) {
@@ -186,7 +208,7 @@ std::vector<BWtriangle> BWmesh::generateBWDelaunay(boundingbox domain, std::vect
 	//Iterate over all points
 
 	for (auto point : gridpoints) {
-		tempTriangles = addVertexAndCheck(point, tempTriangles); //Add each vertex and eliminate invalid triangles
+		addVertexAndCheck(point, tempTriangles); //Add each vertex and eliminate invalid triangles
 	}
 
 	for (auto triangle : tempTriangles) {

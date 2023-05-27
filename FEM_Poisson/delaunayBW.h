@@ -5,6 +5,7 @@
 #include"boundingbox.h"
 #include<functional>
 #include<unordered_map>
+#include<map>
 
 class BWvertex {
 public:
@@ -41,6 +42,8 @@ private:
 class BWtriangle {
 public:
 	BWtriangle(BWvertex v1, BWvertex v2, BWvertex v3);
+	//TO-DO: Make this better
+	BWtriangle();//empty ctor with arbitrary triangle, used for "null" triangles
 	bool inCircumCirc(BWvertex vj);
 	std::array<BWvertex, 3> getVertex() const; //get coordinates;
 	bool shareVertex(BWtriangle t); //check if two triangles share a vertex
@@ -60,7 +63,7 @@ public:
 };
 
 //Aux functions
-std::vector<BWtriangle> addVertexAndCheck(std::array<double, 2> point, std::vector<BWtriangle> triangleArray);
+void addVertexAndCheck(std::array<double, 2> point, std::vector<BWtriangle>& triangleArray);
 std::vector<BWedge> findUniqueEdges(std::vector <BWedge>);
 
 

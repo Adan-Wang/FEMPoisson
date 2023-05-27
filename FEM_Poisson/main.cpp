@@ -4,6 +4,7 @@
 #include "delaunayBW.h"
 #include<fstream>
 #include<map>
+#include<chrono>
 
 int main() {
 
@@ -12,7 +13,7 @@ int main() {
 
 	double domainHeight = 10e-6;
 	double domainLength = 10e-6;
-	double uniformSpacing = 0.3e-6;
+	double uniformSpacing = 0.05e-6;
 
 	boundingbox domain(domainHeight, domainLength);
 	std::vector<double> circleCenter(2, 0);
@@ -25,8 +26,8 @@ int main() {
 	rectangle* square1 = new rectangle(squareCenter, 5e-6, 4e-6);
 	domain.addShape(square1, false);
 
-
-	std::vector < std::array<double, 2>> gridPoints = domain.generateUniformGrid2DRand(uniformSpacing, 0.8);
+	auto gridStart =  std::chrono::high_resolution_clock::now();
+	std::vector < std::array<double, 2>> gridPoints = domain.generateUniformGrid2DRand(uniformSpacing, 0.6);
 
 	std::map<double,std::map<double, int>> gridLookUp;
 
@@ -40,9 +41,22 @@ int main() {
 		grid << pt[0] << "," << pt[1] << std::endl;
 	}
 	grid.close();
-	
+	auto gridStop = std::chrono::high_resolution_clock::now();
+	auto gridTime = std::chrono::duration_cast<std::chrono::milliseconds> (gridStop - gridStart);
+
+	std::cout.precision(4);
+	std::cout << "Grid generation complete, a total of " << gridPoints.size() << " points generated in " << gridTime.count() << " milliseconds" << std::endl;
+
+
+	auto triangulationStart = std::chrono::high_resolution_clock::now();
 	BWmesh* mesh = new BWmesh();
 	std::vector<BWtriangle> triangleMesh = mesh->generateBWDelaunay(domain, gridPoints);
+	auto triangulationStop = std::chrono::high_resolution_clock::now();
+	auto triangulationTime = std::chrono::duration_cast<std::chrono::seconds> (triangulationStop - triangulationStart);
+
+	std::cout.precision(4);
+	std::cout << "Triangulation complete, a total of " << triangleMesh.size() <<" triangles generated in " << triangulationTime.count() << " seconds" << std::endl;
+
 	triangles.open("triangles.csv");
 	for (auto triangle : triangleMesh) {
 		std::array<BWvertex,3> vertexArray = triangle.getVertex(); //get all vertex
@@ -52,8 +66,10 @@ int main() {
 		}
 		triangles << std::endl;
 	}
+	
 
-	std::cout << "Hi" << std::endl;
+	std::cout << "Triangles Saved in csv files" << std::endl;
+	system("py visualizeTriplot.py");
 
 	return 0;
 }
