@@ -6,6 +6,7 @@
 #include<functional>
 #include<unordered_map>
 #include<map>
+#include<list>
 
 class BWvertex {
 public:

@@ -121,8 +121,8 @@ void addVertexAndCheck(std::array<double, 2> point, std::vector<BWtriangle>& tri
 		jj++;
 	}
 
-	//delete all bad triangles from original array, using erase_if rather than calling erase, again, using lambda function for the predicate
-	std::erase_if(triangleArray, [ptVertex](BWtriangle triangle) { return triangle.inCircumCirc(ptVertex); });
+	//delete all bad triangles from original array, using erase_if rather than calling erase, again, using lambda function for the predicate (old method, slow)
+	//std::erase_if(triangleArray, [ptVertex](BWtriangle triangle) { return triangle.inCircumCirc(ptVertex); });
 
 	
 	//Find the set of unique edges from the edge collection, this is n^2 in edge collection in the worst case,
@@ -139,9 +139,30 @@ void addVertexAndCheck(std::array<double, 2> point, std::vector<BWtriangle>& tri
 		std::array<BWvertex, 2> edgeVertecies= edges[ii].getVertex();
 		newTriangles[ii] = BWtriangle(edgeVertecies[0], edgeVertecies[1], ptVertex);
 	}
-	//append original triangle array with new triangles
-	triangleArray.reserve(triangleArray.size() + newTriangles.size());
-	triangleArray.insert(triangleArray.end(), newTriangles.begin(), newTriangles.end());
+	//append original triangle array with new triangles (old method, slow)
+	//triangleArray.reserve(triangleArray.size() + newTriangles.size());
+	//triangleArray.insert(triangleArray.end(), newTriangles.begin(), newTriangles.end());
+	// 
+
+
+	//iterate over all new triangles, replace the bad ones where able to minimize erase
+	int tt = 0;
+	for (const auto& kv : badTriangles) {
+		if (tt >= newTriangles.size()) { //if we ran out of new triangles, start erasing the bad triangles that are remaining by swap and pop to maximize speed
+			std::iter_swap(triangleArray.begin() + kv.first, triangleArray.end() - 1);
+			triangleArray.pop_back();
+			break;
+		}
+		triangleArray[kv.first] = newTriangles[tt];
+		tt++;
+	}
+
+	if (tt < newTriangles.size()) { //If we replaced all the bad ones and there are more triangles to be added, just append them
+		triangleArray.insert(triangleArray.end(), newTriangles.begin() + tt, newTriangles.end());
+	}
+
+
+
 }
 
 std::vector<BWedge> findUniqueEdges(std::vector <BWedge> inputVector) {

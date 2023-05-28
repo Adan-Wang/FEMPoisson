@@ -13,7 +13,7 @@ int main() {
 
 	double domainHeight = 10e-6;
 	double domainLength = 10e-6;
-	double uniformSpacing = 0.01e-6;
+	double uniformSpacing = 0.05e-6;
 
 	boundingbox domain(domainHeight, domainLength);
 	std::vector<double> circleCenter(2, 0);
