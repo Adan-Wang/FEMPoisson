@@ -25,12 +25,12 @@ std::vector<std::array<double, 2>> boundingbox::generateUniformGrid2DRand(double
 	std::vector < std::array<double, 2>> allPoints;
 	std::default_random_engine gen;
 	std::uniform_int_distribution<int> singleSideDist(0, 100);
-	std::uniform_int_distribution<int> twoSideDist(-100, 100);
+	//std::uniform_int_distribution<int> twoSideDist(-100, 100);
 	
 	for (double x = nXBound; x < pXBound; x = x + spacing) {
 		for (double y = nXBound; y < pXBound; y = y + spacing) {
 			//double xJitter = 0.1 * spacing * (double)twoSideDist(gen) / 100;
-			//double yJitter = 0.5 * spacing * (double)twoSideDist(gen) / 100;
+			//double yJitter = 0.1 * spacing * (double)twoSideDist(gen) / 100;
 			std::array<double, 2> pt = {x,y};
 			allPoints.push_back(pt);
 		}
