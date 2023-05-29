@@ -13,7 +13,7 @@ int main() {
 
 	double domainHeight = 10e-6;
 	double domainLength = 10e-6;
-	double uniformSpacing = 0.05e-6;
+	double uniformSpacing = 0.035e-6;
 
 	boundingbox domain(domainHeight, domainLength);
 	std::vector<double> circleCenter(2, 0);
@@ -27,7 +27,7 @@ int main() {
 	domain.addShape(square1, false);
 
 	auto gridStart =  std::chrono::high_resolution_clock::now();
-	std::vector < std::array<double, 2>> gridPoints = domain.generateUniformGrid2DRand(uniformSpacing, 0.6);
+	std::vector < std::array<double, 2>> gridPoints = domain.generateUniformGrid2DRand(uniformSpacing, 1);
 
 	std::map<double,std::map<double, int>> gridLookUp;
 
@@ -46,6 +46,7 @@ int main() {
 
 	std::cout.precision(4);
 	std::cout << "Grid generation complete, a total of " << gridPoints.size() << " points generated in " << gridTime.count() << " milliseconds" << std::endl;
+	std::cout << "The amount of triangles, including the super triangle, should be " << 2 * (gridPoints.size() + 3) - 2 - 3 << std::endl;
 
 
 	auto triangulationStart = std::chrono::high_resolution_clock::now();

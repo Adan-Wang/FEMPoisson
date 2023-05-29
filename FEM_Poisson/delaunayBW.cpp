@@ -232,6 +232,8 @@ std::vector<BWtriangle> BWmesh::generateBWDelaunay(boundingbox domain, std::vect
 		addVertexAndCheck(point, tempTriangles); //Add each vertex and eliminate invalid triangles
 	}
 
+	std::cout << "The total number of triangles, including the super triangle is " << tempTriangles.size() << std::endl;
+
 	for (auto triangle : tempTriangles) {
 		if (!triangle.shareVertex(superTriangle)) {
 			outputTriangles.push_back(triangle);

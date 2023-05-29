@@ -2,6 +2,7 @@
 #include<vector> //Use vector for center to extend to 3D, can probably use pair for 2D only simulations, or use array???
 #include<string>
 #include<iostream>
+#include<limits>
 
 class shape { //Shape is an abstract class, if we want to pass it around we must pass by pointer and not by value
 public:
