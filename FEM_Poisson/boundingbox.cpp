@@ -23,10 +23,15 @@ std::vector<double> boundingbox::obtainLW() {
 std::vector<std::array<double, 2>> boundingbox::generateUniformGrid2DRand(double spacing, double chance) { //Generate grid with a random chance of whether or not the point will be there
 	//Generate points for all of the bounding box first, 100% chance so we get all the points
 	std::vector < std::array<double, 2>> allPoints;
+	std::default_random_engine gen;
+	std::uniform_int_distribution<int> singleSideDist(0, 100);
+	std::uniform_int_distribution<int> twoSideDist(-100, 100);
 	
 	for (double x = nXBound; x < pXBound; x = x + spacing) {
 		for (double y = nXBound; y < pXBound; y = y + spacing) {
-			std::array<double, 2> pt = { x,y };
+			//double xJitter = 0.1 * spacing * (double)twoSideDist(gen) / 100;
+			//double yJitter = 0.5 * spacing * (double)twoSideDist(gen) / 100;
+			std::array<double, 2> pt = {x,y};
 			allPoints.push_back(pt);
 		}
 	}
@@ -51,10 +56,12 @@ std::vector<std::array<double, 2>> boundingbox::generateUniformGrid2DRand(double
 			++i; //increment i
 		}
 		//After we go through all the components, we will know if we can keep the point, now we add in the RNG
-		if (keepPoint && (rand() % 100 + 1)<(chance*100)) {
+		if (keepPoint && (singleSideDist(gen))<(chance*100)) {
 			output.push_back(pt);
 		}
 	}
+
+	//std::shuffle(std::begin(output), std::end(output), gen);
 
 	return output;
 

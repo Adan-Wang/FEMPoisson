@@ -26,7 +26,7 @@ circle::circle(std::vector<double>center, double radius) : shape(center) {
 }
 
 bool circle::withinBounds(double x, double y) {
-	if (((x - mCenterX) * (x - mCenterX) + (y - mCenterY) * (y - mCenterY)) - (mRadius * mRadius) < std::numeric_limits<double>::epsilon() ) {
+	if (((x - mCenterX) * (x - mCenterX) + (y - mCenterY) * (y - mCenterY)) - ((mRadius + 3 * std::numeric_limits<double>::epsilon()) * (mRadius + 3 * std::numeric_limits<double>::epsilon())) < std::numeric_limits<double>::epsilon()*std::numeric_limits<double>::epsilon()) {
 		return true;
 	}
 	return false;

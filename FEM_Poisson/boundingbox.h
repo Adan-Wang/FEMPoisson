@@ -1,6 +1,8 @@
 #pragma once
 #include"shapes.h"
 #include<array>
+#include<random>
+#include<algorithm>
 //Implements the outer bounds of the simulation domain, center of the bounding box is defined as (x,y)=(0,0)
 
 class boundingbox {
